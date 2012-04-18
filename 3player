@@ -1,0 +1,23 @@
+#!/bin/bash
+PROGRAMME=$(echo "$1" | sed -e 's/ /+/g');
+NUM="$2"
+wget -q http://www.tv3.ie/3player/allshows -O html/allshows.html
+SHOW_URL="http://www.tv3.ie$(cat html/allshows.html | grep -Po "<h3><a href=\"/3player/show/.*?[^\\]]\">.*?[^\\]]</a></h3>" | grep ${PROGRAMME} | cut -d\" -f2)"
+wget -q ${SHOW_URL} -O "html/${PROGRAMME}.html"
+
+urls=($(grep -Po "<img alt=\".*?[^\\]]\" src='http://content.tv3.ie/content/videos/.*?[^\\]]'" "html/${PROGRAMME}.html" | cut -d\= -f3 | perl -pi -e "s/_180x102.jpg/.mp4/g" | perl -pi -e "s/'//g" | perl -pi -e "s/3player/3Player/g"))
+COUNT=1;
+
+for url in "${urls[@]}"
+do
+	if [ $COUNT -le $NUM ]; then
+		 echo ${url}
+	fi
+	(( COUNT++ ))
+done
+
+#http://content.tv3.ie/content/videos/0283/vincent_tuesday_3player_1_47576_180x102.jpg
+#http://content.tv3.ie/content/videos/0282/vb_thurs_3player_1_47414_180x102.jpg
+#http://content.tv3.ie/content/videos/0283/vincent_tuesday_3Player_1_47576.mp4
+
+
